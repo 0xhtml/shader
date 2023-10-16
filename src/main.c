@@ -156,9 +156,6 @@ int main() {
     unsigned int sortingProgram = linkFragmentProgram(vertexShader, "src/sorting_fragment.glsl");
     if (!sortingProgram) return 1;
 
-    unsigned int displayProgram = linkFragmentProgram(vertexShader, "src/display_fragment.glsl");
-    if (!displayProgram) return 1;
-
     glDeleteShader(vertexShader);
 
     unsigned int computeShader = loadShader("src/compute.glsl", GL_COMPUTE_SHADER);
@@ -222,22 +219,20 @@ int main() {
         int max = 500;
 
         glUseProgram(sortingProgram);
-        int k;
-        for (k = 0; k < max; ++k) {
-            glBindFramebuffer(GL_FRAMEBUFFER, FBOs[1 - (k % 2)]);
+        for (int k = 0; k < max; ++k) {
+            if (k == max - 1) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            else glBindFramebuffer(GL_FRAMEBUFFER, FBOs[1 - (k % 2)]);
+
+            double x, y;
+            glfwGetCursorPos(window, &x, &y);
+
             glUniform1i(0, 2 + (k % 2));
             glUniform1i(1, 1);
             glUniform1i(2, 1 + k);
-            double x, y;
-            glfwGetCursorPos(window, &x, &y);
             glUniform1f(3, x / 500.0f);
+
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
-
-        glUseProgram(displayProgram);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glUniform1i(0, 2 + (k % 2));
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         glfwSwapBuffers(window);
     }
