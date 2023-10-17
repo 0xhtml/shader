@@ -3,9 +3,9 @@
 out vec4 color;
 
 layout(location = 0) uniform sampler2D image;
-layout(location = 1) uniform sampler2D depth;
-layout(location = 2) uniform int pass;
-layout(location = 3) uniform float threshold;
+layout(location = 1) uniform int pass;
+layout(location = 2) uniform float threshold;
+layout(binding = 1) uniform sampler2D depth;
 
 void main() {
     vec4 self_color = texture(image, gl_FragCoord.xy / 500);
@@ -20,7 +20,7 @@ void main() {
         if (next_depth > threshold) {
             color = self_color;
         } else {
-            color = (invert == 1 ? (self_color.a < next_color.a) : (self_color.a > next_color.a)) ? self_color : next_color;
+            color = (invert == 1 ? (self_color.a <= next_color.a) : (self_color.a >= next_color.a)) ? self_color : next_color;
         }
     }
 }

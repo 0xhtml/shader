@@ -186,18 +186,16 @@ int main() {
         glActiveTexture(GL_TEXTURE2 + i);
         glBindTexture(GL_TEXTURE_2D, fboTextures[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 500, 500, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 500, 500, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 
         glBindFramebuffer(GL_FRAMEBUFFER, FBOs[i]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTextures[i], 0);
     }
 
-    glBindImageTexture(0, fboTextures[0], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
-
     unsigned int SSBO;
     glGenBuffers(1, &SSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, 1, NULL, GL_DYNAMIC_READ);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, 4, NULL, GL_DYNAMIC_READ);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -205,31 +203,32 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
+        float threshold = x / 500.0f;
+
         glBindFramebuffer(GL_FRAMEBUFFER, FBOs[0]);
         glUseProgram(lumaProgram);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        /* glUseProgram(computeProgram); */
-        /* glDispatchCompute(500, 1, 1); */
-        /* glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT); */
+        glUseProgram(computeProgram);
+        glUniform1f(0, threshold);
+        glDispatchCompute(500, 1, 1);
+        glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 
-        /* int max = *(int*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY); */
-        /* printf("max: %d\n", max); */
-        /* glUnmapBuffer(GL_SHADER_STORAGE_BUFFER); */
-        int max = 500;
+        int *map = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_WRITE);
+        int max = *map;
+        *map = 0;
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
         glUseProgram(sortingProgram);
         for (int k = 0; k < max; ++k) {
             if (k == max - 1) glBindFramebuffer(GL_FRAMEBUFFER, 0);
             else glBindFramebuffer(GL_FRAMEBUFFER, FBOs[1 - (k % 2)]);
 
-            double x, y;
-            glfwGetCursorPos(window, &x, &y);
-
             glUniform1i(0, 2 + (k % 2));
-            glUniform1i(1, 1);
-            glUniform1i(2, 1 + k);
-            glUniform1f(3, x / 500.0f);
+            glUniform1i(1, 1 + k);
+            glUniform1f(2, threshold);
 
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
