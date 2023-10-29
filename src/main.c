@@ -40,6 +40,8 @@ unsigned int loadShader(const char* filename, int type) {
     glShaderSource(shader, 1, (const char**)&buffer, NULL);
     glCompileShader(shader);
 
+    free(buffer);
+
     int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
