@@ -1,6 +1,4 @@
-#define _GNU_SOURCE
-
-#include <GL/glew.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <assert.h>
 #include <png.h>
@@ -140,11 +138,8 @@ int main() {
 
     glfwSwapInterval(0);
 
-    GLenum error = glewInit();
-    if (error != GLEW_OK) {
-        printf("error: %s\n", glewGetErrorString(error));
-        return 1;
-    }
+    int version = gladLoadGL(glfwGetProcAddress);
+    printf("OpenGL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(msg, NULL);
