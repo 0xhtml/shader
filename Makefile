@@ -1,12 +1,30 @@
-.PHONY: run
+.PHONY: run clean
 
-run: main
+CFLAGS := -Wall -g -Iglad/include -MMD -MP -c
+LDFLAGS := -lglfw -lpng
+
+OBJ := $(patsubst src/%.c,out/%.o,$(wildcard src/*.c))
+OBJ += out/gl.o
+
+run: out/main
 	./$<
 
 glad:
 	glad --api gl:core=4.6 --out-path $@
 
-glad/src/gl.c: glad
+out:
+	mkdir -p out
 
-main: src/*.c glad/src/gl.c
-	clang -Wall -g -Iglad/include -lglfw -lpng -o $@ $^
+out/%.o: src/%.c | out glad
+	clang $(CFLAGS) -o $@ $<
+
+out/gl.o: glad/src/gl.c | out glad
+	clang $(CFLAGS) -o $@ $<
+
+out/main: $(OBJ) | out
+	clang $(LDFLAGS) -o $@ $^
+
+clean:
+	@$(RM) -rv out glad
+
+-include $(OBJ:.o=.d)
