@@ -103,9 +103,8 @@ int main() {
                 else glBindFramebuffer(GL_FRAMEBUFFER, FBOs[1 - alternating]);
 
                 glUniform1i(0, 2 + alternating);
-                glUniform1f(1, threshold);
-                glUniform1i(2, k);
-                glUniform1i(3, j);
+                glUniform1i(1, k);
+                glUniform1i(2, j);
 
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

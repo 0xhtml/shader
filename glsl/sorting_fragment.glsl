@@ -3,9 +3,8 @@
 out vec4 color;
 
 layout(location = 0) uniform sampler2D image;
-layout(location = 1) uniform float threshold;
-layout(location = 2) uniform int k;
-layout(location = 3) uniform int j;
+layout(location = 1) uniform int k;
+layout(location = 2) uniform int j;
 
 void main() {
     int i = int(gl_FragCoord.y);
